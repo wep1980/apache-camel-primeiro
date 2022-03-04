@@ -20,6 +20,12 @@ public class RotaPedidos {
 				 * noop=true -> Comando para nao apagar os arquivos da pasta pedidos ao transferir para a pasta saida
 				 */
 				from("file:pedidos?delay=5s&noop=true")
+						.split()// Dividindo o conteudo do arquivo por item
+						   .xpath("/pedido/itens/item")
+						   .log("${body}") // Mostrando o ID e o corpo de cada mensagem atraves do log
+						.filter()
+						   //.xpath("/pedido/itens/item/formato[text()='EBOOK']") // Acessando um elemento dentro do arquivo XML, para isso e inserido o caminho ate chegar no elemento formato, e trazer apenas os elementos que sejam do formato EBOOK
+						   .xpath("/item/formato[text()='EBOOK']") // Acessando um elemento dentro do arquivo XML, OBS : APOS O SPLIT ACIMA PARA DIVIDIR O ARQUIVO POR ITEM O CAMINHO ATE O FORMATO FICOU MENOR
 						//.log("${id} - ${body}") // Mostrando o ID e o corpo de cada mensagem
 						.log("${id}") // Mostrando o ID e o corpo de cada mensagem
 						.marshal().xmljson() // Transformando de XML em JSON
