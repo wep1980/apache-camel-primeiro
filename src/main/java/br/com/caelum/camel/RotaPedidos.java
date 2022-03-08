@@ -1,6 +1,7 @@
 package br.com.caelum.camel;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 
@@ -31,7 +32,8 @@ public class RotaPedidos {
 						.marshal().xmljson() // Transformando de XML em JSON
 						.log("${body}") // Imprindo a mensagem transformada no console
 						//.setHeader("CamelFileName", constant("pedido.json")) // Alterando o tipo de arquivo de XML para JSON, so que desta forma transformou e enviou apenas 1 arquivo
-						.setHeader("CamelFileName", simple("${file:name.noext}.json")) // Alterando o tipo de XML para JSON de todos os arquvios
+						//.setHeader("CamelFileName", simple("${file:name.noext}.json")) // Alterando o tipo de XML para JSON de todos os arquvios
+						.setHeader(Exchange.FILE_NAME, simple("${file:name.noext}-${header.CamelSplitIndex}.json")) // Faz a mesma coisa que o codigo acima, mas de forma elegante
 						.to("file:saida");
 
 			}
