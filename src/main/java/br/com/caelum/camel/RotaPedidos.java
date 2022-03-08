@@ -3,6 +3,7 @@ package br.com.caelum.camel;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.impl.DefaultCamelContext;
 
 public class RotaPedidos {
@@ -23,18 +24,20 @@ public class RotaPedidos {
 				from("file:pedidos?delay=5s&noop=true")
 						.split()// Dividindo o conteudo do arquivo por item
 						   .xpath("/pedido/itens/item")
-						   .log("${body}") // Mostrando o ID e o corpo de cada mensagem atraves do log
+						   //.log("${body}") // Mostrando o ID e o corpo de cada mensagem atraves do log
 						.filter()
 						   //.xpath("/pedido/itens/item/formato[text()='EBOOK']") // Acessando um elemento dentro do arquivo XML, para isso e inserido o caminho ate chegar no elemento formato, e trazer apenas os elementos que sejam do formato EBOOK
 						   .xpath("/item/formato[text()='EBOOK']") // Acessando um elemento dentro do arquivo XML, OBS : APOS O SPLIT ACIMA PARA DIVIDIR O ARQUIVO POR ITEM O CAMINHO ATE O FORMATO FICOU MENOR
 						//.log("${id} - ${body}") // Mostrando o ID e o corpo de cada mensagem
-						.log("${id}") // Mostrando o ID e o corpo de cada mensagem
+						//.log("${id}") // Mostrando o ID e o corpo de cada mensagem
 						.marshal().xmljson() // Transformando de XML em JSON
-						.log("${body}") // Imprindo a mensagem transformada no console
+						.log("${id} - ${body}") // Imprindo a mensagem transformada no console
 						//.setHeader("CamelFileName", constant("pedido.json")) // Alterando o tipo de arquivo de XML para JSON, so que desta forma transformou e enviou apenas 1 arquivo
 						//.setHeader("CamelFileName", simple("${file:name.noext}.json")) // Alterando o tipo de XML para JSON de todos os arquvios
-						.setHeader(Exchange.FILE_NAME, simple("${file:name.noext}-${header.CamelSplitIndex}.json")) // Faz a mesma coisa que o codigo acima, mas de forma elegante
-						.to("file:saida");
+						.setHeader(Exchange.HTTP_METHOD, HttpMethods.GET) // Faz uma requisicao a um metodo GET no servico do endereço abaixo
+						.setHeader(Exchange.HTTP_QUERY, constant("ebookId=ARQ&pedidoId=2451256&clienteId=edgar.b@abc.com"))// enviando os parametros do metodo GET
+						//.to("file:saida");
+				        .to("http4://localhost:8080/webservices/ebook/item");
 
 			}
 		});
